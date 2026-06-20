@@ -8,20 +8,22 @@ st.write("Choose the fruits you want in your custom smoothie!")
 name_on_order = st.text_input("Name on Smoothie:")
 st.write("The name on your smoothie will be:", name_on_order)
 
+# ✅ Correct way: use secret NAMES, not values
 connection_parameters = {
-    "account": st.secrets["LDLCAKS-USB34575"],
-    "user": st.secrets["ANUSHAREDDY2003"],
-    "password": st.secrets["Anushareddy1234@"],
-    "role": st.secrets["accountadmin"],
-    "warehouse": st.secrets["compute_wh"],
-    "database": st.secrets["demo_db"],
-    "schema": st.secrets["public"]
+    "account": st.secrets["account"],
+    "user": st.secrets["user"],
+    "password": st.secrets["password"],
+    "role": st.secrets["role"],
+    "warehouse": st.secrets["warehouse"],
+    "database": st.secrets["database"],
+    "schema": st.secrets["schema"]
 }
 
 session = Session.builder.configs(connection_parameters).create()
 
+# Get fruit list from Snowflake
 my_dataframe = session.table(
-    "smoothies.public.fruit_options"
+    "SMOOTHIES.PUBLIC.FRUIT_OPTIONS"
 ).select(col("FRUIT_NAME"))
 
 fruit_list = [row["FRUIT_NAME"] for row in my_dataframe.collect()]
@@ -34,16 +36,19 @@ ingredients_list = st.multiselect(
 
 if ingredients_list:
 
-    ingredients_string = " ".join(ingredients_list)
+    ingredients_string = ", ".join(ingredients_list)
 
-    st.write(ingredients_string)
+    st.write("Selected:", ingredients_string)
 
     if st.button("Submit Order"):
 
+        safe_name = name_on_order.replace("'", "''")
+        safe_ingredients = ingredients_string.replace("'", "''")
+
         insert_stmt = f"""
-        INSERT INTO smoothies.public.orders
-        (ingredients, name_on_order)
-        VALUES ('{ingredients_string}', '{name_on_order}')
+        INSERT INTO SMOOTHIES.PUBLIC.ORDERS
+        (INGREDIENTS, NAME_ON_ORDER)
+        VALUES ('{safe_ingredients}', '{safe_name}')
         """
 
         session.sql(insert_stmt).collect()
