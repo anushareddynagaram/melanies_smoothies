@@ -36,7 +36,8 @@ if ingredients_list:
     st.write("Selected:", ingredients_string)
 
     smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
-    st.text(smoothiefroot_response.json())
+    #st.text(smoothiefroot_response.json())
+    sf_df=st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
 
     if st.button("Submit Order"):
         safe_name = name_on_order.replace("'", "''")
